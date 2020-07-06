@@ -10,6 +10,9 @@ defmodule SeshatWeb.Router do
 
     get "/webhook", WebhookController, :verify
     post "/webhook", WebhookController, :receive_event
+
+    # needed so I can submit to facebook review
+    get "/privacy_policy", PrivacyPolicyController, :show
   end
 
   # Enables LiveDashboard only for development

@@ -16,5 +16,12 @@ config :library, Library.Providers.Goodreads, key: "dummy_gr_key"
 
 config :library, provider: Library.ProviderMock
 
+config :analyzer, provider: Analyzer.ProviderMock
+
+config :analyzer, Analyzer.Providers.Watson,
+  api_key: "dummy_key",
+  instance_url: "https://watson.test",
+  api_version: "2019-07-12"
+
 # Print only warnings and errors during test
 config :logger, level: :warn

@@ -41,6 +41,7 @@ defmodule Seshat.MixProject do
       {:tesla, "~> 1.3.0"},
       {:mox, "~> 0.5", only: :test},
       {:library, in_umbrella: true},
+      {:analyzer, in_umbrella: true},
       {:jason, "~> 1.0"}
     ]
   end

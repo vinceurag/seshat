@@ -52,7 +52,10 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
               text: book.title,
               image_url: book.cover,
               subtitle: "by #{build_author_name_subtitle(book.authors)}",
-              buttons: [%PostbackButton{text: "Evaluate this", payload: "evaluate_#{book.id}"}]
+              buttons: [
+                %PostbackButton{text: "Evaluate this", payload: "evaluate_#{book.id}"},
+                %PostbackButton{text: "Find Another Book", payload: "find_another_book"}
+              ]
             }
           end)
 
@@ -86,20 +89,16 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
             %GenericTemplateElement{
               text: book.title,
               image_url: book.cover,
-              subtitle: "by #{build_author_name_subtitle(book.authors)}"
+              subtitle: "by #{build_author_name_subtitle(book.authors)}",
+              buttons: [
+                %PostbackButton{text: "Evaluate This", payload: "evaluate_#{book_id}"},
+                %PostbackButton{text: "Find Another Book", payload: "find_another_book"}
+              ]
             }
           ]
         }
 
-        response_3 = %QuickReply{
-          text: "Am I correct?",
-          options: [
-            %{text: "Yes", payload: "accept_search_book_by_id"},
-            %{text: "No", payload: "reject_search_book_by_id"}
-          ]
-        }
-
-        {:reply, user_data.id, [response_1, response_2, response_3]}
+        {:reply, user_data.id, [response_1, response_2]}
 
       {:error, :book_not_found} ->
         response = %Text{
@@ -111,13 +110,24 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
   end
 
   @impl Seshat.Providers.Facebook.Handler
-  def handle(user_data, %{"text" => _text}) do
-    response = %Text{
+  def handle(user_data, _any) do
+    response_1 = %Text{
       text: "Hey #{user_data.profile.first_name}!"
     }
 
-    {:reply, user_data.id, response}
+    response_2 = %QuickReply{
+      text:
+        "Would you like to search a book by ID (from our good friends at Goodreads) or by title?",
+      options: [
+        %{text: "By ID", payload: "search_book_by_id"},
+        %{text: "By Title", payload: "search_book_by_title"}
+      ]
+    }
+
+    {:reply, user_data.id, [response_1, response_2]}
   end
+
+  defp build_author_name_subtitle([]), do: "No authors listed"
 
   defp build_author_name_subtitle([author | rest]) do
     _build_author_name_subtitle(author.name, rest)

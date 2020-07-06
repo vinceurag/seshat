@@ -34,6 +34,11 @@ config :seshat, Seshat.Verification,
 
 config :library, Library.Providers.Goodreads, key: System.get_env("GOODREADS_API_KEY")
 
+config :analyzer, Analyzer.Providers.Watson,
+  api_key: System.get_env("WATSON_API_KEY"),
+  instance_url: System.get_env("WATSON_URL"),
+  api_version: "2019-07-12"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

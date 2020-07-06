@@ -10,6 +10,7 @@ defmodule Seshat.Providers.FacebookTest do
   alias Seshat.Providers.Facebook.Responses.{
     GenericTemplate,
     GenericTemplateElement,
+    PostbackButton,
     QuickReply,
     Text
   }
@@ -19,6 +20,18 @@ defmodule Seshat.Providers.FacebookTest do
   setup :verify_on_exit!
 
   setup do
+    typing_on_body =
+      Jason.encode!(%{
+        recipient: %{id: @sender_id},
+        sender_action: "typing_on"
+      })
+
+    typing_off_body =
+      Jason.encode!(%{
+        recipient: %{id: @sender_id},
+        sender_action: "typing_off"
+      })
+
     Tesla.Mock.mock(fn
       %{method: :get, url: "https://graph.facebook.com/v7.0/#{@sender_id}"} ->
         json(%{
@@ -26,6 +39,20 @@ defmodule Seshat.Providers.FacebookTest do
           "last_name" => "Statham",
           "profile_pic" => "https://vin.cy/cv"
         })
+
+      %{
+        method: :post,
+        url: "https://graph.facebook.com/v7.0/me/messages",
+        body: ^typing_on_body
+      } ->
+        json(%{"recipient_id" => %{id: @sender_id}, "message_id" => "xxxx"})
+
+      %{
+        method: :post,
+        url: "https://graph.facebook.com/v7.0/me/messages",
+        body: ^typing_off_body
+      } ->
+        json(%{"recipient_id" => %{id: @sender_id}, "message_id" => "xxxx"})
     end)
 
     on_exit(fn ->
@@ -62,7 +89,18 @@ defmodule Seshat.Providers.FacebookTest do
          }}
       end)
 
-      assert {:reply, @sender_id, %Text{text: "Hey Vincy!"}} =
+      assert {:reply, @sender_id,
+              [
+                %Seshat.Providers.Facebook.Responses.Text{text: "Hey Vincy!"},
+                %Seshat.Providers.Facebook.Responses.QuickReply{
+                  options: [
+                    %{payload: "search_book_by_id", text: "By ID"},
+                    %{payload: "search_book_by_title", text: "By Title"}
+                  ],
+                  text:
+                    "Would you like to search a book by ID (from our good friends at Goodreads) or by title?"
+                }
+              ]} =
                Facebook.process_event(%{
                  "message" => %{"text" => "Hello!"},
                  "sender" => %{"id" => @sender_id}
@@ -71,6 +109,7 @@ defmodule Seshat.Providers.FacebookTest do
 
     test "handles book id message when book was found" do
       book_id = "50"
+      btn_postback = "evaluate_#{book_id}"
       modify_user_data(@sender_id, %{intent: "search_book_by_id"})
 
       expect(Library.ProviderMock, :get_book_by_id, fn book_id ->
@@ -88,9 +127,16 @@ defmodule Seshat.Providers.FacebookTest do
               [
                 %Text{text: "It seems that you want to know my evaluation of this book:"},
                 %GenericTemplate{
-                  elements: [%GenericTemplateElement{subtitle: "by Vincy, Wency & Boi"}]
-                },
-                %QuickReply{}
+                  elements: [
+                    %GenericTemplateElement{
+                      subtitle: "by Vincy, Wency & Boi",
+                      buttons: [
+                        %PostbackButton{payload: ^btn_postback},
+                        %PostbackButton{payload: "find_another_book"}
+                      ]
+                    }
+                  ]
+                }
               ]} =
                Facebook.process_event(%{
                  "message" => %{"text" => book_id},
@@ -188,6 +234,75 @@ defmodule Seshat.Providers.FacebookTest do
       assert {:reply, @sender_id, [%Text{}, %QuickReply{}]} =
                Facebook.process_event(%{
                  "postback" => %{"payload" => "get_started"},
+                 "sender" => %{"id" => @sender_id}
+               })
+    end
+
+    test "handles evaluate_<id> when book reviews are positive" do
+      book_id = "1"
+
+      stub(Library.ProviderMock, :get_book_reviews, fn _id -> {:ok, []} end)
+
+      expect(Analyzer.ProviderMock, :get_sentiment, 1, fn _doc ->
+        {:ok, %Analyzer.Entities.Sentiment{score: 100, label: :positive}}
+      end)
+
+      assert {:reply, @sender_id,
+              [
+                %Text{
+                  text:
+                    "According to my analysis of the reviews, it seems that a lot people liked this book. You might like it too!\n\nI recommend buying it. 😉"
+                },
+                %Text{text: "Just say hey when you need me again!"}
+              ]} =
+               Facebook.process_event(%{
+                 "postback" => %{"payload" => "evaluate_#{book_id}"},
+                 "sender" => %{"id" => @sender_id}
+               })
+    end
+
+    test "handles evaluate_<id> when book reviews are neutral" do
+      book_id = "1"
+
+      stub(Library.ProviderMock, :get_book_reviews, fn _id -> {:ok, []} end)
+
+      expect(Analyzer.ProviderMock, :get_sentiment, 1, fn _doc ->
+        {:ok, %Analyzer.Entities.Sentiment{score: -100, label: :neutral}}
+      end)
+
+      assert {:reply, @sender_id,
+              [
+                %Text{
+                  text:
+                    "According to my analysis of the reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
+                },
+                %Text{text: "Just say hey when you need me again!"}
+              ]} =
+               Facebook.process_event(%{
+                 "postback" => %{"payload" => "evaluate_#{book_id}"},
+                 "sender" => %{"id" => @sender_id}
+               })
+    end
+
+    test "handles evaluate_<id> when book reviews are negative" do
+      book_id = "1"
+
+      stub(Library.ProviderMock, :get_book_reviews, fn _id -> {:ok, []} end)
+
+      expect(Analyzer.ProviderMock, :get_sentiment, 1, fn _doc ->
+        {:ok, %Analyzer.Entities.Sentiment{score: -100, label: :negative}}
+      end)
+
+      assert {:reply, @sender_id,
+              [
+                %Text{
+                  text:
+                    "According to my analysis of the reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
+                },
+                %Text{text: "Just say hey when you need me again!"}
+              ]} =
+               Facebook.process_event(%{
+                 "postback" => %{"payload" => "evaluate_#{book_id}"},
                  "sender" => %{"id" => @sender_id}
                })
     end

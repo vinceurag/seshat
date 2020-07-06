@@ -10,8 +10,7 @@ defmodule Library.Providers.GoodreadsTest do
   @title "The Vincy Code"
   @description "This most awesome book the world has seen."
   @author "Vincy Man"
-  @isbn "123456789"
-  @cover "http://covers.openlibrary.org/b/isbn/#{@isbn}-M.jpg"
+  @cover "https://goodreads.com/image/123"
   @non_existing_book_id "1000"
   @key Application.get_env(:library, Library.Providers.Goodreads)[:key]
 
@@ -178,7 +177,7 @@ defmodule Library.Providers.GoodreadsTest do
       <book>
         <id>#{@id}</id>
         <title>#{@title}</title>
-        <isbn>#{@isbn}</isbn>
+        <image_url>#{@cover}</image_url>
         <description>#{@description}</description>
         <authors>
           <author>

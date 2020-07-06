@@ -3,7 +3,7 @@ defmodule Library do
   Library handles all book-related processes.
   """
 
-  alias Library.Entities.Book
+  alias Library.Entities.{Book, Review}
   alias Library.Provider
 
   @doc """
@@ -17,5 +17,11 @@ defmodule Library do
   @spec get_books_by_title(title :: String.t()) :: {:ok, [Book.t()]} | {:error, :books_not_found}
   def get_books_by_title(title) do
     Provider.get_books_by_title(title)
+  end
+
+  @spec get_book_reviews(book_id :: String.t()) ::
+          {:ok, [Review.t()]} | {:error, :book_not_found} | {:error, :reviews_not_found}
+  def get_book_reviews(book_id) do
+    Provider.get_book_reviews(book_id)
   end
 end

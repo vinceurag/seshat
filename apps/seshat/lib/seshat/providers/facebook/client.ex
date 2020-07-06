@@ -5,7 +5,7 @@ defmodule Seshat.Providers.Facebook.Client do
   plug(Tesla.Middleware.JSON, engine: Jason, engine_opts: [keys: :atoms])
   plug(Tesla.Middleware.Query, access_token: page_access_token())
 
-  @spec send_response(any, any) :: {:error, any} | {:ok, Tesla.Env.t()}
+  @spec send_response(sender_id :: String.t(), any) :: {:error, any} | {:ok, Tesla.Env.t()}
   def send_response(sender_id, response) do
     body = %{
       recipient: %{id: sender_id},
@@ -19,6 +19,17 @@ defmodule Seshat.Providers.Facebook.Client do
   @spec get_profile(psid :: String.t()) :: {:ok, Tesla.Env.t()}
   def get_profile(psid) do
     get("/#{psid}", query: [fields: "first_name,last_name,profile_pic"])
+  end
+
+  @spec send_typing(sender_id :: String.t(), state :: :on | :off) ::
+          {:error, any} | {:ok, Tesla.Env.t()}
+  def send_typing(sender_id, state) do
+    body = %{
+      recipient: %{id: sender_id},
+      sender_action: "typing_#{state}"
+    }
+
+    post("/me/messages", body)
   end
 
   defp page_access_token() do

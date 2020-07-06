@@ -16,7 +16,7 @@ defmodule Library.Providers.Goodreads do
             id: ~x"./book/id/text()"s,
             title: ~x"./book/title/text()"s,
             excerpt: ~x"./book/description/text()"s,
-            isbn: ~x"./book/isbn/text()"s,
+            cover: ~x"./book/image_url/text()"s,
             authors: [
               ~x"./book/authors/author"l,
               name: ~x"./name/text()"s,
@@ -53,7 +53,8 @@ defmodule Library.Providers.Goodreads do
     end
   end
 
-  @spec get_book_reviews(book_id :: String.t()) :: {:ok, [Review.t()]} | {:error, :book_not_found}
+  @spec get_book_reviews(book_id :: String.t()) ::
+          {:ok, [Review.t()]} | {:error, :book_not_found} | {:error, :reviews_not_found}
   def get_book_reviews(book_id) do
     case Client.list_reviews(book_id) do
       {:ok, %Tesla.Env{status: 404}} ->
@@ -89,7 +90,7 @@ defmodule Library.Providers.Goodreads do
       id: map.id,
       title: map.title,
       excerpt: map[:excerpt],
-      cover: get_cover(map),
+      cover: map.cover,
       authors: build_authors(map.authors)
     }
   end
@@ -105,12 +106,5 @@ defmodule Library.Providers.Goodreads do
 
   defp build_authors(author) when is_binary(author) do
     [%{name: author}]
-  end
-
-  defp get_cover(book_map) do
-    case book_map[:isbn] do
-      isbn when is_nil(isbn) or isbn == "" -> book_map.cover
-      isbn -> "http://covers.openlibrary.org/b/isbn/#{isbn}-M.jpg"
-    end
   end
 end

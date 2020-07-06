@@ -1,9 +1,9 @@
-defmodule Library.MixProject do
+defmodule Analyzer.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :library,
+      app: :analyzer,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -26,8 +26,8 @@ defmodule Library.MixProject do
   defp deps do
     [
       {:tesla, "~> 1.3.0"},
-      {:sweet_xml, "~> 0.6.6"},
-      {:mox, "~> 0.5", only: :test}
+      {:mox, "~> 0.5", only: :test},
+      {:jason, "~> 1.0"}
     ]
   end
 end

@@ -3,24 +3,38 @@ defmodule Seshat.Providers.Facebook do
 
   alias Seshat.ConversationStore
   alias Seshat.Providers.Facebook
+  alias Seshat.Providers.Facebook.Client
   alias Seshat.Providers.Facebook.Handlers.{Message, Postback}
 
+  @impl Seshat.Provider
   @spec process_event(event :: map()) :: {:reply, any(), any()} | {:noreply, any()}
   def process_event(%{"message" => message} = event) do
     user_data = get_user_data(event)
 
-    Message.handle(user_data, message)
+    Client.send_typing(user_data.id, :on)
+
+    response = Message.handle(user_data, message)
+
+    Client.send_typing(user_data.id, :off)
+
+    response
   end
 
   def process_event(%{"postback" => postback} = event) do
     user_data = get_user_data(event)
 
-    Postback.handle(user_data, postback)
+    Client.send_typing(user_data.id, :on)
+
+    response = Postback.handle(user_data, postback)
+
+    Client.send_typing(user_data.id, :off)
+
+    response
   end
 
   @spec get_profile(sender_id :: String.t()) :: Facebook.Entities.Profile.t()
   def get_profile(user_id) do
-    {:ok, response} = Facebook.Client.get_profile(user_id)
+    {:ok, response} = Client.get_profile(user_id)
 
     %Facebook.Entities.Profile{
       first_name: response.body.first_name,
@@ -29,19 +43,20 @@ defmodule Seshat.Providers.Facebook do
     }
   end
 
+  @impl Seshat.Provider
   @spec send(recipient_id :: String.t(), responses :: map() | [map()]) :: :ok
   def send(recipient_id, responses) when is_list(responses) do
     Enum.each(responses, fn response ->
       formatted_response = Facebook.ResponseBuilder.build(response)
 
-      Facebook.Client.send_response(recipient_id, formatted_response)
+      Client.send_response(recipient_id, formatted_response)
     end)
   end
 
   def send(recipient_id, response_struct) do
     response = Facebook.ResponseBuilder.build(response_struct)
 
-    Facebook.Client.send_response(recipient_id, response)
+    Client.send_response(recipient_id, response)
 
     :ok
   end

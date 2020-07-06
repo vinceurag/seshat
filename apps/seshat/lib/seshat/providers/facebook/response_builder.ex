@@ -46,6 +46,20 @@ end
 
 defimpl Facebook.ResponseBuilder, for: Facebook.Responses.GenericTemplateElement do
   def build(%Facebook.Responses.GenericTemplateElement{} = el) do
-    %{title: el.text, image_url: el.image_url, subtitle: el.subtitle}
+    %{
+      title: el.text,
+      image_url: el.image_url,
+      subtitle: el.subtitle,
+      buttons: build_buttons(el.buttons)
+    }
+  end
+
+  defp build_buttons([]), do: []
+  defp build_buttons(buttons), do: Enum.map(buttons, &Facebook.ResponseBuilder.build/1)
+end
+
+defimpl Facebook.ResponseBuilder, for: Facebook.Responses.PostbackButton do
+  def build(%Facebook.Responses.PostbackButton{} = btn) do
+    %{type: "postback", title: btn.text, payload: btn.payload}
   end
 end

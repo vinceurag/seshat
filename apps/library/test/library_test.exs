@@ -1,44 +1,39 @@
 defmodule LibraryTest do
   use ExUnit.Case
 
-  import Tesla.Mock
-
   @id "123"
   @title "The Vincy Code"
   @description "This most awesome book the world has seen."
   @author "Vincy Man"
   @isbn "123456789"
   @cover "http://covers.openlibrary.org/b/isbn/#{@isbn}-M.jpg"
-  @non_existing_book_id "1000"
-  @key Application.get_env(:library, Library.Providers.Goodreads)[:key]
 
-  setup do
-    mock(fn
-      %{
-        method: :get,
-        url: "https://www.goodreads.com/book/show",
-        query: [id: "1000", key: @key]
-      } ->
-        %Tesla.Env{status: 404, body: "<error>Page Not Found</error>"}
+  import Mox
 
-      %{
-        method: :get,
-        url: "https://www.goodreads.com/book/show"
-      } ->
-        %Tesla.Env{status: 200, body: sample_gr_response()}
-    end)
+  alias Library.Entities.Book
 
-    :ok
-  end
+  setup :verify_on_exit!
 
   describe "get_book_by_id/1" do
-    test "returns error when book was not found" do
-      assert {:error, :book_not_found} = Library.get_book_by_id(@non_existing_book_id)
+    test "returns book_not_found when book does not exist" do
+      expect(Library.ProviderMock, :get_book_by_id, fn _ -> {:error, :book_not_found} end)
+      assert {:error, :book_not_found} = Library.get_book_by_id(@id)
     end
 
-    test "returns a book map" do
+    test "returns a book entity" do
+      expect(Library.ProviderMock, :get_book_by_id, fn _ ->
+        {:ok,
+         %Book{
+           id: @id,
+           title: @title,
+           excerpt: @description,
+           cover: @cover,
+           authors: [%{name: @author}]
+         }}
+      end)
+
       assert {:ok,
-              %{
+              %Book{
                 id: @id,
                 title: @title,
                 excerpt: @description,
@@ -48,23 +43,37 @@ defmodule LibraryTest do
     end
   end
 
-  defp sample_gr_response() do
-    """
-    <GoodreadsResponse>
-      <book>
-        <id>#{@id}</id>
-        <title>#{@title}</title>
-        <isbn>#{@isbn}</isbn>
-        <description>#{@description}</description>
-        <image_url>#{@cover}</image_url>
-        <authors>
-          <author>
-            <name>#{@author}</name>
-            <role></role>
-          </author>
-        </authors>
-      </book>
-    </GoodreadsResponse>
-    """
+  describe "get_books_by_title/1" do
+    test "returns books_not_found when nothing was found" do
+      expect(Library.ProviderMock, :get_books_by_title, fn _ -> {:error, :books_not_found} end)
+
+      assert {:error, :books_not_found} = Library.get_books_by_title("dummy title")
+    end
+
+    test "returns a list of books" do
+      expect(Library.ProviderMock, :get_books_by_title, fn _ ->
+        {:ok,
+         [
+           %Book{
+             id: @id,
+             title: @title,
+             excerpt: nil,
+             cover: @cover,
+             authors: [%{name: @author}]
+           }
+         ]}
+      end)
+
+      assert {:ok,
+              [
+                %Book{
+                  id: @id,
+                  title: @title,
+                  excerpt: nil,
+                  cover: @cover,
+                  authors: [%{name: @author}]
+                }
+              ]} = Library.get_books_by_title("dummy title")
+    end
   end
 end

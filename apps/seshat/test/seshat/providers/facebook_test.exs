@@ -6,7 +6,13 @@ defmodule Seshat.Providers.FacebookTest do
 
   alias Seshat.ConversationStore
   alias Seshat.Providers.Facebook
-  alias Seshat.Providers.Facebook.Responses.{GenericTemplate, QuickReply, Text}
+
+  alias Seshat.Providers.Facebook.Responses.{
+    GenericTemplate,
+    GenericTemplateElement,
+    QuickReply,
+    Text
+  }
 
   @sender_id "123"
 
@@ -45,9 +51,9 @@ defmodule Seshat.Providers.FacebookTest do
 
   describe "process_event/1 - message-type events" do
     test "handles message-type event" do
-      stub(Seshat.BookFinderAdapterMock, :find_book_by_id, fn book_id ->
+      stub(Library.ProviderMock, :get_book_by_id, fn book_id ->
         {:ok,
-         %{
+         %Library.Entities.Book{
            id: book_id,
            title: "Title",
            authors: [%{name: "Vincy"}],
@@ -67,12 +73,12 @@ defmodule Seshat.Providers.FacebookTest do
       book_id = "50"
       modify_user_data(@sender_id, %{intent: "search_book_by_id"})
 
-      expect(Seshat.BookFinderAdapterMock, :find_book_by_id, fn book_id ->
+      expect(Library.ProviderMock, :get_book_by_id, fn book_id ->
         {:ok,
-         %{
+         %Library.Entities.Book{
            id: book_id,
            title: "Title",
-           authors: [%{name: "Vincy"}],
+           authors: [%{name: "Vincy"}, %{name: "Wency"}, %{name: "Boi"}],
            excerpt: "Excerpt",
            cover: "https://vin.cy"
          }}
@@ -81,7 +87,9 @@ defmodule Seshat.Providers.FacebookTest do
       assert {:reply, @sender_id,
               [
                 %Text{text: "It seems that you want to know my evaluation of this book:"},
-                %GenericTemplate{},
+                %GenericTemplate{
+                  elements: [%GenericTemplateElement{subtitle: "by Vincy, Wency & Boi"}]
+                },
                 %QuickReply{}
               ]} =
                Facebook.process_event(%{
@@ -94,7 +102,7 @@ defmodule Seshat.Providers.FacebookTest do
       book_id = "50"
       modify_user_data(@sender_id, %{intent: "search_book_by_id"})
 
-      expect(Seshat.BookFinderAdapterMock, :find_book_by_id, fn _book_id ->
+      expect(Library.ProviderMock, :get_book_by_id, fn _book_id ->
         {:error, :book_not_found}
       end)
 
@@ -102,6 +110,58 @@ defmodule Seshat.Providers.FacebookTest do
               %Text{text: "I can't seem to find the book. Can you tell me the book ID again?"}} =
                Facebook.process_event(%{
                  "message" => %{"text" => book_id},
+                 "sender" => %{"id" => @sender_id}
+               })
+    end
+
+    test "handles book title message when books were found" do
+      book_title = "title"
+      modify_user_data(@sender_id, %{intent: "search_book_by_title"})
+
+      expect(Library.ProviderMock, :get_books_by_title, fn book_title ->
+        {:ok,
+         [
+           %Library.Entities.Book{
+             id: book_title,
+             title: "Title",
+             authors: [%{name: "Vincy"}],
+             excerpt: "Excerpt",
+             cover: "https://vin.cy"
+           }
+         ]}
+      end)
+
+      assert {:reply, @sender_id,
+              [
+                %Text{
+                  text:
+                    "I looked into the interwebs and found these... Which book would you like to evaluate?"
+                },
+                %GenericTemplate{} = generic_template
+              ]} =
+               Facebook.process_event(%{
+                 "message" => %{"text" => book_title},
+                 "sender" => %{"id" => @sender_id}
+               })
+
+      assert Enum.count(generic_template.elements) == 1
+    end
+
+    test "handles book title message when books were not found" do
+      book_title = "title"
+      modify_user_data(@sender_id, %{intent: "search_book_by_title"})
+
+      expect(Library.ProviderMock, :get_books_by_title, fn _book_title ->
+        {:error, :books_not_found}
+      end)
+
+      assert {:reply, @sender_id,
+              %Text{
+                text:
+                  "I didn't find any books with that title. 😢 Can you tell me another book title?"
+              }} =
+               Facebook.process_event(%{
+                 "message" => %{"text" => book_title},
                  "sender" => %{"id" => @sender_id}
                })
     end

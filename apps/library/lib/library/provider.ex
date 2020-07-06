@@ -2,10 +2,22 @@ defmodule Library.Provider do
   @callback get_book_by_id(id :: String.t()) ::
               {:ok, Library.Entities.Book.t()} | {:error, :book_not_found}
 
+  @callback get_books_by_title(title :: String.t()) ::
+              {:ok, [Library.Entities.Book.t()]} | {:error, :books_not_found}
+
+  @callback get_book_reviews(book_id :: String.t()) ::
+              {:ok, [Library.Entities.Review.t()]} | {:error, :book_not_found}
+
   @spec get_book_by_id(id :: String.t()) ::
           {:ok, Library.Entities.Book.t()} | {:error, :book_not_found}
   def get_book_by_id(id) do
     provider().get_book_by_id(id)
+  end
+
+  @spec get_books_by_title(title :: String.t()) ::
+          {:ok, [Library.Entities.Book.t()]} | {:error, :books_not_found}
+  def get_books_by_title(title) do
+    provider().get_books_by_title(title)
   end
 
   defp provider() do

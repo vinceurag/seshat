@@ -40,7 +40,8 @@ defmodule Seshat.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:tesla, "~> 1.3.0"},
       {:mox, "~> 0.5", only: :test},
-      {:library, in_umbrella: true}
+      {:library, in_umbrella: true},
+      {:jason, "~> 1.0"}
     ]
   end
 

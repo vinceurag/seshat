@@ -2,11 +2,11 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
   @behaviour Seshat.Providers.Facebook.Handler
 
   alias Seshat.ConversationStore
-  alias Seshat.BookFinder
 
   alias Seshat.Providers.Facebook.Responses.{
     GenericTemplate,
     GenericTemplateElement,
+    PostbackButton,
     QuickReply,
     Text
   }
@@ -34,10 +34,48 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
   end
 
   @impl Seshat.Providers.Facebook.Handler
+  def handle(%{intent: "search_book_by_title"} = user_data, %{"text" => title}) do
+    ConversationStore.save_user_data(user_data.id, %{user_data | variable: title})
+
+    case Library.get_books_by_title(title) do
+      {:ok, books} ->
+        top_five_books = Enum.take(books, 5)
+
+        response_1 = %Text{
+          text:
+            "I looked into the interwebs and found these... Which book would you like to evaluate?"
+        }
+
+        template_elements =
+          Enum.map(top_five_books, fn book ->
+            %GenericTemplateElement{
+              text: book.title,
+              image_url: book.cover,
+              subtitle: "by #{build_author_name_subtitle(book.authors)}",
+              buttons: [%PostbackButton{text: "Evaluate this", payload: "evaluate_#{book.id}"}]
+            }
+          end)
+
+        response_2 = %GenericTemplate{
+          elements: template_elements
+        }
+
+        {:reply, user_data.id, [response_1, response_2]}
+
+      {:error, :books_not_found} ->
+        response = %Text{
+          text: "I didn't find any books with that title. 😢 Can you tell me another book title?"
+        }
+
+        {:reply, user_data.id, response}
+    end
+  end
+
+  @impl Seshat.Providers.Facebook.Handler
   def handle(%{intent: "search_book_by_id"} = user_data, %{"text" => book_id}) do
     ConversationStore.save_user_data(user_data.id, %{user_data | variable: book_id})
 
-    case BookFinder.find_book_by_id(book_id) do
+    case Library.get_book_by_id(book_id) do
       {:ok, book} ->
         response_1 = %Text{
           text: "It seems that you want to know my evaluation of this book:"

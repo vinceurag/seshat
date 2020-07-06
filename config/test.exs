@@ -8,13 +8,13 @@ config :seshat_web, SeshatWeb.Endpoint,
 
 config :tesla, adapter: Tesla.Mock
 
-config :seshat, Seshat.BookFinder, adapter: Seshat.BookFinderAdapterMock
-
 config :seshat, Seshat.Verification,
   verification_token: "dummy_verification_token",
   page_access_token: "dummy_access_token"
 
 config :library, Library.Providers.Goodreads, key: "dummy_gr_key"
+
+config :library, provider: Library.ProviderMock
 
 # Print only warnings and errors during test
 config :logger, level: :warn

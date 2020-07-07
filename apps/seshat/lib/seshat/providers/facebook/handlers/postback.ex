@@ -27,6 +27,8 @@ defmodule Seshat.Providers.Facebook.Handlers.Postback do
        [%Text{text: response_text}, %Text{text: "Just say hey when you need me again!"}]}
     else
       _ ->
+        clean_user_data(user_data)
+
         {:reply, user_data.id,
          [
            %Text{

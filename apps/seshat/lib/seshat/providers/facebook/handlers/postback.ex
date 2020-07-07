@@ -18,13 +18,23 @@ defmodule Seshat.Providers.Facebook.Handlers.Postback do
             "According to my analysis of its reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
 
           :negative ->
-            "According to my analysis of its reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
+            "According to my analysis of its reviews, it seems that the majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
         end
 
       clean_user_data(user_data)
 
       {:reply, user_data.id,
        [%Text{text: response_text}, %Text{text: "Just say hey when you need me again!"}]}
+    else
+      _ ->
+        {:reply, user_data.id,
+         [
+           %Text{
+             text:
+               "Hmmm. Interestingly, I cannot find any reviews for that book.\n\nI don't have any strong opinion about this. Let's just say, but at your own risk? 🤪"
+           },
+           %Text{text: "Just say hey when you need me again!"}
+         ]}
     end
   end
 

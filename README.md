@@ -13,6 +13,8 @@ Under the hood, it uses ETS to maintain the state of the users using the chatbot
 
 The project is deployed in Gigalixir: [https://early-conscious-sandpiper.gigalixirapp.com/](https://early-conscious-sandpiper.gigalixirapp.com/)
 
+You may test the bot by messaging this: https://m.me/SeshatBooky
+
 ## Test Coverage
 
 ### Analyzer
@@ -58,7 +60,7 @@ COV    FILE                                        LINES RELEVANT   MISSED
   0.0% lib/seshat/providers/facebook/entities/p       11        0        0
   0.0% lib/seshat/providers/facebook/handler.ex       11        0        0
 100.0% lib/seshat/providers/facebook/handlers/m      147       39        0
- 83.3% lib/seshat/providers/facebook/handlers/p       70       18        3
+ 84.2% lib/seshat/providers/facebook/handlers/p       80       19        3
 100.0% lib/seshat/providers/facebook/response_b       65       15        0
   0.0% lib/seshat/providers/facebook/responses/        8        0        0
   0.0% lib/seshat/providers/facebook/responses/        9        0        0
@@ -66,7 +68,7 @@ COV    FILE                                        LINES RELEVANT   MISSED
   0.0% lib/seshat/providers/facebook/responses/        8        0        0
   0.0% lib/seshat/providers/facebook/responses/        7        0        0
 100.0% lib/seshat/verification.ex                     30        4        0
-[TOTAL]  94.3%
+[TOTAL]  94.4%
 ----------------
 ```
 

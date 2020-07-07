@@ -284,6 +284,25 @@ defmodule Seshat.Providers.FacebookTest do
                })
     end
 
+    test "handles evaluate_<id> when there are no book reviews" do
+      book_id = "1"
+
+      stub(Library.ProviderMock, :get_book_reviews, fn _id -> {:error, :reviews_not_found} end)
+
+      assert {:reply, @sender_id,
+              [
+                %Text{
+                  text:
+                    "Hmmm. Interestingly, I cannot find any reviews for that book.\n\nI don't have any strong opinion about this. Let's just say, but at your own risk? 🤪"
+                },
+                %Text{text: "Just say hey when you need me again!"}
+              ]} =
+               Facebook.process_event(%{
+                 "postback" => %{"payload" => "evaluate_#{book_id}"},
+                 "sender" => %{"id" => @sender_id}
+               })
+    end
+
     test "handles evaluate_<id> when book reviews are negative" do
       book_id = "1"
 
@@ -297,7 +316,7 @@ defmodule Seshat.Providers.FacebookTest do
               [
                 %Text{
                   text:
-                    "According to my analysis of its reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
+                    "According to my analysis of its reviews, it seems that the majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
                 },
                 %Text{text: "Just say hey when you need me again!"}
               ]} =

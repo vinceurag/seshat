@@ -76,6 +76,8 @@ defmodule Seshat.Providers.Facebook.Handlers.Message do
 
   @impl Seshat.Providers.Facebook.Handler
   def handle(%{intent: "search_book_by_id"} = user_data, %{"text" => book_id}) do
+    book_id = String.trim(book_id)
+
     ConversationStore.save_user_data(user_data.id, %{user_data | variable: book_id})
 
     case Library.get_book_by_id(book_id) do

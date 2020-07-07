@@ -1,4 +1,14 @@
 defmodule Library.Providers.Goodreads do
+  @moduledoc """
+  Goodreads Provider
+
+  Some gotchas:
+    - Some of their endpoints does not support json format.
+    - There's also the use of an undocumented API endpoint (`/book/reviews`).
+
+  https://www.goodreads.com/api
+  """
+
   @behaviour Library.Provider
 
   import SweetXml

@@ -1,4 +1,10 @@
 defmodule Seshat.Providers.Facebook do
+  @moduledoc """
+  Facebook Provider
+
+  https://developers.facebook.com/docs/messenger-platform/getting-started
+  """
+
   @behaviour Seshat.Provider
 
   alias Seshat.ConversationStore

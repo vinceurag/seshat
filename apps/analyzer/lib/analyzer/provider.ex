@@ -1,6 +1,6 @@
 defmodule Analyzer.Provider do
   @moduledoc """
-  This is the Provider behaviour.
+  This is the AnalyzerProvider behaviour.
   If you're planning to plug-in another sentiment analyzer provider,
   just make sure it adheres to this contract.
   """

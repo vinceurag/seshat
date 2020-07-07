@@ -1,4 +1,8 @@
 defmodule Seshat.Verification do
+  @moduledoc """
+  This module handles the verification handshake
+  """
+
   @spec verify(String.t(), String.t()) :: {:error, String.t()} | {:ok, :verified}
   def verify(mode, token) when is_binary(mode) and is_binary(token) do
     with :ok <- check_mode(mode),

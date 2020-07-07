@@ -12,13 +12,13 @@ defmodule Seshat.Providers.Facebook.Handlers.Postback do
       response_text =
         case sentiment.label do
           :positive ->
-            "According to my analysis of the reviews, it seems that a lot people liked this book. You might like it too!\n\nI recommend buying it. 😉"
+            "According to my analysis of its reviews, it seems that a lot people liked this book. You might like it too!\n\nI recommend buying it. 😉"
 
           :neutral ->
-            "According to my analysis of the reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
+            "According to my analysis of its reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
 
           :negative ->
-            "According to my analysis of the reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
+            "According to my analysis of its reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
         end
 
       clean_user_data(user_data)

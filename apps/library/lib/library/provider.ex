@@ -1,6 +1,6 @@
 defmodule Library.Provider do
   @moduledoc """
-  This is the Provider behaviour.
+  This is the LibraryProvider behaviour.
   If you're planning to plug-in another book finder (?) provider,
   just make sure it adheres to this contract.
   """

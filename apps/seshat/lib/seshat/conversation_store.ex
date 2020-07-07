@@ -1,4 +1,9 @@
 defmodule Seshat.ConversationStore do
+  @moduledoc """
+  This module handles the startup and read/write of the ETS table.
+  The ETS table handles the user data.
+  """
+
   use GenServer
 
   require Logger

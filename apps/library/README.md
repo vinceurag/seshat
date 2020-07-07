@@ -1,6 +1,8 @@
 # Library
 
-**TODO: Add description**
+App for finding books.
+
+To implement a new provider, please check the `Library.Provider` behaviour.
 
 ## Installation
 

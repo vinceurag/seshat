@@ -1,6 +1,8 @@
 # Analyzer
 
-**TODO: Add description**
+Analayzer app for analyzing documents/texts.
+
+To implement a new provider, please check the `Analyzer.Provider` behaviour.
 
 ## Installation
 

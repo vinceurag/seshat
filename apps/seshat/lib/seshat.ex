@@ -26,15 +26,6 @@ defmodule Seshat do
     {:stop, :normal, provider}
   end
 
-  @doc """
-  Spawns a new process.
-
-  ## Examples
-
-      iex> start_link()
-      {:ok, #PID<0.777.0>}
-
-  """
   def start_link(provider) do
     GenServer.start_link(__MODULE__, provider)
   end

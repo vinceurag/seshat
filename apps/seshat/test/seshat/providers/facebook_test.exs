@@ -251,7 +251,7 @@ defmodule Seshat.Providers.FacebookTest do
               [
                 %Text{
                   text:
-                    "According to my analysis of the reviews, it seems that a lot people liked this book. You might like it too!\n\nI recommend buying it. 😉"
+                    "According to my analysis of its reviews, it seems that a lot people liked this book. You might like it too!\n\nI recommend buying it. 😉"
                 },
                 %Text{text: "Just say hey when you need me again!"}
               ]} =
@@ -274,7 +274,7 @@ defmodule Seshat.Providers.FacebookTest do
               [
                 %Text{
                   text:
-                    "According to my analysis of the reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
+                    "According to my analysis of its reviews, people are pretty neutral about this book. How about being the tie-breaker?\n\nAnyway, buy at your own risk. 😛"
                 },
                 %Text{text: "Just say hey when you need me again!"}
               ]} =
@@ -297,7 +297,7 @@ defmodule Seshat.Providers.FacebookTest do
               [
                 %Text{
                   text:
-                    "According to my analysis of the reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
+                    "According to my analysis of its reviews, it seems that majority of the people didn't like this book.\n\nThe final descision is still yours but I suggest finding another book. 😏"
                 },
                 %Text{text: "Just say hey when you need me again!"}
               ]} =

@@ -42,7 +42,7 @@ defmodule Library.Providers.Goodreads do
     end
   end
 
-  @spec get_books_by_title(title :: String.t()) :: {:ok, Book.t()} | {:error, :book_not_found}
+  @spec get_books_by_title(title :: String.t()) :: {:ok, [Book.t()]} | {:error, :books_not_found}
   def get_books_by_title(title) do
     with {:ok, %Tesla.Env{body: response}} <- Client.search_books(title) do
       results =
